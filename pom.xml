@@ -79,6 +79,11 @@
             <artifactId>altinn-rettigheter-proxy-klient</artifactId>
             <version>${altinn-rettigheter-proxy-klient.version}</version>
         </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>log</artifactId>
+            <version>2.2020.08.28_14.16-420d1471cb04</version>
+        </dependency>
 
         <!-- Swagger -->
         <dependency>

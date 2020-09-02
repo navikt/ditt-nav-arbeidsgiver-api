@@ -1,6 +1,6 @@
 <configuration scan="true">
     <springProfile name="preprod,prod">
-        <appender name="consoleAppender"  class="no.nav.log.MaskingAppender">
+        <appender name="consoleAppender"  class="no.nav.common.log.MaskingAppender">
             <appender name="stdout_json_masked" class="ch.qos.logback.core.ConsoleAppender">
                 <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
             </appender>
