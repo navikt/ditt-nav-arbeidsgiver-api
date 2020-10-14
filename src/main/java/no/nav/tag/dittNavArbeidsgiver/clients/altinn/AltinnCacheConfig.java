@@ -1,4 +1,4 @@
-package no.nav.tag.dittNavArbeidsgiver.services.altinn;
+package no.nav.tag.dittNavArbeidsgiver.clients.altinn;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.caffeine.CaffeineCache;

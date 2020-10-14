@@ -7,7 +7,7 @@ import no.nav.security.token.support.core.context.TokenValidationContextHolder;
 import no.nav.tag.dittNavArbeidsgiver.clients.altinn.AltinnTilgangssøknadClient;
 import no.nav.tag.dittNavArbeidsgiver.models.AltinnTilgangssøknad;
 import no.nav.tag.dittNavArbeidsgiver.models.AltinnTilgangssøknadsskjema;
-import no.nav.tag.dittNavArbeidsgiver.services.altinn.AltinnService;
+import no.nav.tag.dittNavArbeidsgiver.clients.altinn.AltinnClient;
 import no.nav.tag.dittNavArbeidsgiver.utils.FnrExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,17 +39,17 @@ public class AltinnTilgangController {
     );
 
     private final AltinnTilgangssøknadClient altinnTilgangssøknadClient;
-    private final AltinnService altinnService;
+    private final AltinnClient altinnClient;
     private final TokenValidationContextHolder requestContextHolder;
 
     @Autowired
     public AltinnTilgangController(
             AltinnTilgangssøknadClient altinnTilgangssøknadClient,
-            AltinnService altinnService,
+            AltinnClient altinnClient,
             TokenValidationContextHolder requestContextHolder
     ) {
         this.altinnTilgangssøknadClient = altinnTilgangssøknadClient;
-        this.altinnService = altinnService;
+        this.altinnClient = altinnClient;
         this.requestContextHolder = requestContextHolder;
     }
 
@@ -63,7 +63,7 @@ public class AltinnTilgangController {
     public ResponseEntity<AltinnTilgangssøknad> sendSøknadOmTilgang(@RequestBody AltinnTilgangssøknadsskjema søknadsskjema) {
         var fødselsnummer= FnrExtractor.extract(requestContextHolder);
 
-        var brukerErIOrg = altinnService.hentOrganisasjoner(fødselsnummer)
+        var brukerErIOrg = altinnClient.hentOrganisasjoner(fødselsnummer)
                 .stream()
                 .anyMatch(org -> org.getOrganizationNumber().equals(søknadsskjema.orgnr));
 

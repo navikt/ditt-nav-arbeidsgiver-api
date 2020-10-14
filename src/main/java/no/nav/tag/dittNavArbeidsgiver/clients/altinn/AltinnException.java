@@ -1,4 +1,4 @@
-package no.nav.tag.dittNavArbeidsgiver.services.altinn;
+package no.nav.tag.dittNavArbeidsgiver.clients.altinn;
 
 public class AltinnException extends RuntimeException {
     public AltinnException(String message) {

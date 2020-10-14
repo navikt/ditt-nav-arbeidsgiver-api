@@ -1,4 +1,4 @@
-package no.nav.tag.dittNavArbeidsgiver.services.altinn;
+package no.nav.tag.dittNavArbeidsgiver.clients.altinn;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.arbeidsgiver.altinnrettigheter.proxy.klient.AltinnrettigheterProxyKlient;
@@ -15,18 +15,18 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static no.nav.tag.dittNavArbeidsgiver.services.altinn.AltinnCacheConfig.ALTINN_CACHE;
-import static no.nav.tag.dittNavArbeidsgiver.services.altinn.AltinnCacheConfig.ALTINN_TJENESTE_CACHE;
+import static no.nav.tag.dittNavArbeidsgiver.clients.altinn.AltinnCacheConfig.ALTINN_CACHE;
+import static no.nav.tag.dittNavArbeidsgiver.clients.altinn.AltinnCacheConfig.ALTINN_TJENESTE_CACHE;
 
 @Slf4j
 @Component
-public class AltinnService {
+public class AltinnClient {
 
     private final AltinnrettigheterProxyKlient klient;
     private final TokenUtils tokenUtils;
 
     @Autowired
-    public AltinnService(AltinnConfig altinnConfig, TokenUtils tokenUtils ) {
+    public AltinnClient(AltinnConfig altinnConfig, TokenUtils tokenUtils ) {
         String altinnProxyUrl = altinnConfig.getProxyUrl();
         String altinnProxyFallbackUrl = altinnConfig.getProxyFallbackUrl();
         this.tokenUtils = tokenUtils;

@@ -1,4 +1,4 @@
-package no.nav.tag.dittNavArbeidsgiver.services.altinn;
+package no.nav.tag.dittNavArbeidsgiver.clients.altinn;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

@@ -5,7 +5,6 @@ import no.nav.tag.dittNavArbeidsgiver.clients.altinn.dto.DelegationRequest;
 import no.nav.tag.dittNavArbeidsgiver.clients.altinn.dto.Søknadsstatus;
 import no.nav.tag.dittNavArbeidsgiver.models.AltinnTilgangssøknad;
 import no.nav.tag.dittNavArbeidsgiver.models.AltinnTilgangssøknadsskjema;
-import no.nav.tag.dittNavArbeidsgiver.services.altinn.AltinnConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
