@@ -43,7 +43,7 @@ public class AccesstokenClient {
         }
     }
 
-    private HttpEntity<MultiValueMap<String, String>> getRequestEntity() {
+    private HttpEntity<?> getRequestEntity() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -59,5 +59,4 @@ public class AccesstokenClient {
     @CacheEvict(AAD_CACHE)
     public void evict() {
     }
-
 }

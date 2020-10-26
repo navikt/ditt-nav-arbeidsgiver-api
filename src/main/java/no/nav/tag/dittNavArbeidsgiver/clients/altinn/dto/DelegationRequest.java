@@ -9,6 +9,7 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DelegationRequest {
+    public String Guid;
     public String RequestStatus;
     public String OfferedBy;
     public String CoveredBy;

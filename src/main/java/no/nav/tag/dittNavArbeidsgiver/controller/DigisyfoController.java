@@ -1,18 +1,14 @@
 package no.nav.tag.dittNavArbeidsgiver.controller;
 
-
-import no.finn.unleash.Unleash;
 import no.nav.security.token.support.core.api.Protected;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
 import no.nav.tag.dittNavArbeidsgiver.models.NarmesteLedertilgang;
+import no.nav.tag.dittNavArbeidsgiver.services.aktor.AktorClient;
 import no.nav.tag.dittNavArbeidsgiver.services.digisyfo.DigisyfoService;
-
-import static no.nav.tag.dittNavArbeidsgiver.utils.FnrExtractor.extract;
+import no.nav.tag.dittNavArbeidsgiver.utils.FnrExtractor;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,35 +19,23 @@ public class DigisyfoController {
 
     private final TokenValidationContextHolder requestContextHolder;
     private final DigisyfoService digisyfoService;
-    private final Unleash unleash;
-    @Value("${digisyfo.digisyfoUrl}")
-    private String digisyfoUrl;
+    private final AktorClient aktorClient;
 
     @Autowired
-    public DigisyfoController(TokenValidationContextHolder requestContextHolder, DigisyfoService digisyfoService, Unleash unleash) {
+    public DigisyfoController(TokenValidationContextHolder requestContextHolder, DigisyfoService digisyfoService, AktorClient aktorClient) {
         this.requestContextHolder = requestContextHolder;
         this.digisyfoService = digisyfoService;
-        this.unleash = unleash;
-
+        this.aktorClient = aktorClient;
     }
 
     @GetMapping(value = "/api/narmesteleder")
     public ResponseEntity<NarmesteLedertilgang> sjekkNarmestelederTilgang() {
+        String fnr = FnrExtractor.extract(requestContextHolder);
+        String aktørId = aktorClient.getAktorId(fnr);
+
         NarmesteLedertilgang response = new NarmesteLedertilgang();
-        response.tilgang = digisyfoService.getNarmesteledere(extract(requestContextHolder)).getNarmesteLedere().length > 0;
+        response.tilgang = digisyfoService.getNarmesteledere(aktørId).getNarmesteLedere().length > 0;
         return ResponseEntity.ok(response);
-
     }
-
-    @GetMapping(value = "/api/sykemeldinger")
-    public String hentAntallSykemeldinger(@CookieValue("nav-esso") String navesso) {
-        return unleash.isEnabled("dna.digisyfo.hentSykemeldinger") ? digisyfoService.hentSykemeldingerFraSyfo(navesso) : "[]";
-    }
-    
-    @GetMapping(value = "/api/syfooppgaver")
-    public String hentSyfoOppgaver(@CookieValue("nav-esso") String navesso) {
-        return digisyfoService.hentSyfoOppgaver(navesso);
-    }
-
 }
 

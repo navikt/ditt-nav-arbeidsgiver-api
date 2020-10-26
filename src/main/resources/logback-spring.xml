@@ -12,8 +12,12 @@
             <appender-ref ref="consoleAppender"/>
         </root>
     </springProfile>
-    <springProfile name="local,labs">
+    <springProfile name="labs">
         <include resource="org/springframework/boot/logging/logback/base.xml"/>
         <logger name="org.springframework.web" level="DEBUG"/>
+    </springProfile>
+    <springProfile name="local">
+        <include resource="org/springframework/boot/logging/logback/base.xml"/>
+        <logger name="ch.qos.logback.core.ConsoleAppender" level="DEBUG"/>
     </springProfile>
 </configuration>

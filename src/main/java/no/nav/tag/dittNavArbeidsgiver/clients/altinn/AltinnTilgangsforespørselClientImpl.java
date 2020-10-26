@@ -3,9 +3,10 @@ package no.nav.tag.dittNavArbeidsgiver.clients.altinn;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.tag.dittNavArbeidsgiver.clients.altinn.dto.DelegationRequest;
 import no.nav.tag.dittNavArbeidsgiver.clients.altinn.dto.Søknadsstatus;
-import no.nav.tag.dittNavArbeidsgiver.models.AltinnTilgangssøknad;
+import no.nav.tag.dittNavArbeidsgiver.models.AltinnTilgangsforespørsel;
 import no.nav.tag.dittNavArbeidsgiver.models.AltinnTilgangssøknadsskjema;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,8 +21,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Profile({"prod", "dev"})
 @Component
-public class AltinnTilgangssøknadClient {
+public class AltinnTilgangsforespørselClientImpl implements AltinnTilgangsforespørselClient {
     private final RestTemplate restTemplate;
     private final HttpHeaders altinnHeaders;
     private final UriComponentsBuilder altinnUriBuilder;
@@ -30,7 +32,7 @@ public class AltinnTilgangssøknadClient {
     private final ParameterizedTypeReference<DelegationRequest> delegationRequestType;
 
     @Autowired
-    public AltinnTilgangssøknadClient(RestTemplate restTemplate, AltinnConfig altinnConfig) {
+    public AltinnTilgangsforespørselClientImpl(RestTemplate restTemplate, AltinnConfig altinnConfig) {
         this.restTemplate = restTemplate;
 
         this.altinnUriBuilder = UriComponentsBuilder.fromUriString(
@@ -55,8 +57,9 @@ public class AltinnTilgangssøknadClient {
     }
 
 
-    public List<AltinnTilgangssøknad> hentSøknader(String fødselsnummer) {
-        var resultat = new ArrayList<AltinnTilgangssøknad>();
+    @Override
+    public List<AltinnTilgangsforespørsel> hentAlleSøknader() {
+        var resultat = new ArrayList<AltinnTilgangsforespørsel>();
         URI uri = altinnUri;
 
         do {
@@ -83,10 +86,11 @@ public class AltinnTilgangssøknadClient {
             body.embedded
                     .delegationRequests
                     .stream()
-                    .filter(søknad -> fødselsnummer.equals(søknad.CoveredBy))
                     .map(søknadDTO -> {
-                        var søknad = new AltinnTilgangssøknad();
+                        var søknad = new AltinnTilgangsforespørsel();
+                        søknad.setId(søknadDTO.Guid);
                         søknad.setOrgnr(søknadDTO.OfferedBy);
+                        søknad.setFnr(søknadDTO.CoveredBy);
                         søknad.setStatus(søknadDTO.RequestStatus);
                         søknad.setCreatedDateTime(søknadDTO.Created);
                         søknad.setLastChangedDateTime(søknadDTO.LastChanged);
@@ -95,19 +99,27 @@ public class AltinnTilgangssøknadClient {
                         søknad.setSubmitUrl(søknadDTO.links.sendRequest.href);
                         return søknad;
                     })
+                    .filter(forespørsel -> {
+                        if (forespørsel.isValid()) {
+                            return true;
+                        }
+                        log.error("Mottatt altinn tilgangsforespørsel er ugyldig: {}", forespørsel);
+                        return false;
+                    })
                     .collect(Collectors.toCollection(() -> resultat));
         } while (uri != null);
 
         return resultat;
     }
 
-    public AltinnTilgangssøknad sendSøknad(String fødselsnummer, AltinnTilgangssøknadsskjema søknadsskjema) {
+    @Override
+    public AltinnTilgangsforespørsel sendSøknad(AltinnTilgangssøknadsskjema søknadsskjema) {
         var requestResource = new DelegationRequest.RequestResource();
         requestResource.ServiceCode = søknadsskjema.serviceCode;
         requestResource.ServiceEditionCode = søknadsskjema.serviceEdition;
 
         var delegationRequest = new DelegationRequest();
-        delegationRequest.CoveredBy = fødselsnummer;
+        delegationRequest.CoveredBy = søknadsskjema.fnr;
         delegationRequest.OfferedBy = søknadsskjema.orgnr;
         delegationRequest.RedirectUrl = søknadsskjema.redirectUrl;
         delegationRequest.RequestResources = List.of(requestResource);
@@ -127,9 +139,29 @@ public class AltinnTilgangssøknadClient {
 
         var body = response.getBody();
 
-        var svar = new AltinnTilgangssøknad();
+        var svar = new AltinnTilgangsforespørsel();
         svar.setStatus(body.RequestStatus);
         svar.setSubmitUrl(body.links.sendRequest.href);
         return svar;
+    }
+
+    @Override
+    public void delete(String guid) {
+        var url = altinnUriBuilder.cloneBuilder()
+                .pathSegment(guid)
+                .build()
+                .toUri();
+
+        var request = RequestEntity
+                .delete(url)
+                .headers(altinnHeaders)
+                .build();
+        var response = restTemplate.exchange(request, Void.class);
+
+        if (response.getStatusCode() != HttpStatus.OK) {
+            var msg = String.format("sletting av tilgangssøknad i altinn feilet med http-status %s", response.getStatusCode());
+            log.error(msg);
+            throw new RuntimeException(msg);
+        }
     }
 }

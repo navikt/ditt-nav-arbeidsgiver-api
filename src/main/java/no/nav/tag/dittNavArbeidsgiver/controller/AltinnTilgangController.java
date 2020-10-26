@@ -4,10 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.Pair;
 import no.nav.security.token.support.core.api.Protected;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
-import no.nav.tag.dittNavArbeidsgiver.clients.altinn.AltinnTilgangssøknadClient;
-import no.nav.tag.dittNavArbeidsgiver.models.AltinnTilgangssøknad;
+import no.nav.tag.dittNavArbeidsgiver.models.AltinnTilgangsforespørsel;
 import no.nav.tag.dittNavArbeidsgiver.models.AltinnTilgangssøknadsskjema;
 import no.nav.tag.dittNavArbeidsgiver.clients.altinn.AltinnClient;
+import no.nav.tag.dittNavArbeidsgiver.services.altinn.AltinnTilgangsforespørselService;
 import no.nav.tag.dittNavArbeidsgiver.utils.FnrExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Protected
@@ -38,29 +39,35 @@ public class AltinnTilgangController {
             Pair.of("5278", "1")
     );
 
-    private final AltinnTilgangssøknadClient altinnTilgangssøknadClient;
+    private final AltinnTilgangsforespørselService altinnTilgangsforespørselService;
     private final AltinnClient altinnClient;
     private final TokenValidationContextHolder requestContextHolder;
 
     @Autowired
     public AltinnTilgangController(
-            AltinnTilgangssøknadClient altinnTilgangssøknadClient,
+            AltinnTilgangsforespørselService altinnTilgangsforespørselService,
             AltinnClient altinnClient,
             TokenValidationContextHolder requestContextHolder
     ) {
-        this.altinnTilgangssøknadClient = altinnTilgangssøknadClient;
+        this.altinnTilgangsforespørselService = altinnTilgangsforespørselService;
         this.altinnClient = altinnClient;
         this.requestContextHolder = requestContextHolder;
     }
 
     @GetMapping()
-    public ResponseEntity<List<AltinnTilgangssøknad>> mineSøknaderOmTilgang() {
+    public ResponseEntity<List<AltinnTilgangsforespørsel>> mineSøknaderOmTilgang() {
         String fødselsnummer = FnrExtractor.extract(requestContextHolder);
-        return ResponseEntity.ok(altinnTilgangssøknadClient.hentSøknader(fødselsnummer));
+        return ResponseEntity.ok(List.copyOf(altinnTilgangsforespørselService.hentForespørsler(fødselsnummer)));
     }
 
     @PostMapping()
-    public ResponseEntity<AltinnTilgangssøknad> sendSøknadOmTilgang(@RequestBody AltinnTilgangssøknadsskjema søknadsskjema) {
+    public ResponseEntity<AltinnTilgangsforespørsel> sendSøknadOmTilgang(@RequestBody AltinnTilgangssøknadsskjema søknadsskjema) {
+        validateNotBlank("orgnr", søknadsskjema.orgnr);
+        validateNotBlank("service code", søknadsskjema.serviceCode);
+        validateNotBlank("redirect url", søknadsskjema.redirectUrl);
+        Objects.requireNonNull(søknadsskjema.serviceEdition, "serviceEdition");
+
+
         var fødselsnummer= FnrExtractor.extract(requestContextHolder);
 
         var brukerErIOrg = altinnClient.hentOrganisasjoner(fødselsnummer)
@@ -79,6 +86,14 @@ public class AltinnTilgangController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        return ResponseEntity.ok(altinnTilgangssøknadClient.sendSøknad(fødselsnummer, søknadsskjema));
+        søknadsskjema.fnr = fødselsnummer;
+        return ResponseEntity.ok(altinnTilgangsforespørselService.sendForespørsel(søknadsskjema));
+    }
+
+    private static void validateNotBlank(String whatItIs, String shouldNotBeBlank) {
+        Objects.requireNonNull(shouldNotBeBlank, whatItIs);
+        if (shouldNotBeBlank.matches("\\s*")) {
+            throw new IllegalArgumentException("Should not be blank: " + whatItIs);
+        }
     }
 }

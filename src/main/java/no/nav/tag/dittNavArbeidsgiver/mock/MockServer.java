@@ -1,4 +1,4 @@
-package no.nav.tag.dittNavArbeidsgiver.mockserver;
+package no.nav.tag.dittNavArbeidsgiver.mock;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -18,7 +18,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -37,8 +36,6 @@ public class MockServer {
             @Value("${sts.stsUrl}") String stsUrl,
             @Value("${aad.aadAccessTokenURL}") String aadUrl,
             @Value("${aktorregister.aktorUrl}") String aktorUrl,
-            @Value("${digisyfo.sykemeldteURL}") String sykemeldteUrl,
-            @Value("${digisyfo.syfooppgaveurl}") String syfoOpggaveUrl,
             @Value("${digisyfo.digisyfoUrl}") String digisyfoUrl
     ) {
         log.info("starter mockserveren");
@@ -51,16 +48,12 @@ public class MockServer {
         String stsPath = new URL(stsUrl).getPath();
         String aadPath = new URL(aadUrl).getPath();
         String aktorPath = new URL(aktorUrl).getPath();
-        String sykemeldtePath = new URL(sykemeldteUrl).getPath();
-        String syfoOppgavePath = new URL(syfoOpggaveUrl).getPath();
         String syfoNarmesteLederPath = new URL(digisyfoUrl).getPath();
 
         mockForPath(server, ALTINN_PROXY_PATH, "organisasjoner.json");
         mockForPath(server, stsPath, "STStoken.json");
         mockForPath(server, aadPath, "aadtoken.json");
         mockForPath(server, aktorPath, "aktorer.json");
-        mockForPath(server, sykemeldtePath, "sykemeldinger.json");
-        mockForPath(server, syfoOppgavePath, "syfoOppgaver.json");
         mockForPath(server, syfoNarmesteLederPath, "narmesteLeder.json");
         mocktilgangTilSkjemForBedriftForAltinnProxy(server);
         server.start();

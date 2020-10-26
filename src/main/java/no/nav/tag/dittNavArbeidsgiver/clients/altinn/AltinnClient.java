@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.tag.dittNavArbeidsgiver.clients.altinn.AltinnCacheConfig.ALTINN_CACHE;
-import static no.nav.tag.dittNavArbeidsgiver.clients.altinn.AltinnCacheConfig.ALTINN_TJENESTE_CACHE;
 
 @Slf4j
 @Component
@@ -46,27 +45,8 @@ public class AltinnClient {
     public List<Organisasjon> hentOrganisasjoner(String fnr) {
         try {
             return mapTo(klient.hentOrganisasjoner(
-                   new SelvbetjeningToken(tokenUtils.getTokenForInnloggetBruker()),
-                new Subject(fnr),
-               true
-                ));
-        }  catch (Exception exception) {
-            log.error("Feil fra Altinn: Exception: " + exception.getMessage());
-            if(exception.getMessage().contains("403")){
-                throw new TilgangskontrollException("bruker har ikke en aktiv altinn profil");
-            }
-            else{
-                throw new AltinnException("Feil fra Altinn", exception);
-            }
-        }};
-
-
-    @Cacheable(ALTINN_TJENESTE_CACHE)
-    public List<Organisasjon> hentOrganisasjonerBasertPaRettigheter(String fnr, String serviceKode, String serviceEdition) {
-        try {
-            return mapTo(klient.hentOrganisasjoner(
                     new SelvbetjeningToken(tokenUtils.getTokenForInnloggetBruker()),
-                    new Subject(fnr), new ServiceCode(serviceKode), new ServiceEdition(serviceEdition),
+                    new Subject(fnr),
                     true
             ));
         }  catch (Exception exception) {
@@ -77,7 +57,29 @@ public class AltinnClient {
             else{
                 throw new AltinnException("Feil fra Altinn", exception);
             }
-        }};
+        }
+    }
+
+
+    public List<Organisasjon> hentOrganisasjonerBasertPaRettigheter(String fnr, String serviceKode, String serviceEdition) {
+        try {
+            return mapTo(klient.hentOrganisasjoner(
+                    new SelvbetjeningToken(tokenUtils.getTokenForInnloggetBruker()),
+                    new Subject(fnr),
+                    new ServiceCode(serviceKode),
+                    new ServiceEdition(serviceEdition),
+                    true
+            ));
+        }  catch (Exception exception) {
+            log.error("Feil fra Altinn: Exception: " + exception.getMessage());
+            if(exception.getMessage().contains("403")){
+                throw new TilgangskontrollException("bruker har ikke en aktiv altinn profil");
+            }
+            else{
+                throw new AltinnException("Feil fra Altinn", exception);
+            }
+        }
+    }
 
 
     private List<Organisasjon> mapTo(List<AltinnReportee> altinnReportees) {
