@@ -23,9 +23,6 @@ spec:
     failureThreshold: 3
   ingresses:
     - https://arbeidsgiver.dev.nav.no/min-side-arbeidsgiver-api/
-  webproxy: true
-  vault:
-    enabled: true
   envFrom:
     - configmap: loginservice-idporten
   env:
