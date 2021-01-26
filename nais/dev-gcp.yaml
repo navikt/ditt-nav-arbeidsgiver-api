@@ -6,21 +6,19 @@ metadata:
   labels:
     team: arbeidsgiver
 spec:
-  image: {{image}}
+  image: {{ image }}
   team: arbeidsgiver
   port: 8080
   liveness:
     path: /min-side-arbeidsgiver-api/internal/actuator/health
-    initialDelay: 30
-    timeout: 1
-    periodSeconds: 10
-    failureThreshold: 3
+    initialDelay: 60
+    timeout: 15
+    periodSeconds: 5
+    failureThreshold: 10
   readiness:
     path: /min-side-arbeidsgiver-api/internal/actuator/health
-    initialDelay: 30
-    timeout: 1
-    periodSeconds: 10
-    failureThreshold: 3
+    initialDelay: 60
+    timeout: 15
   ingresses:
     - https://arbeidsgiver.dev.nav.no/min-side-arbeidsgiver-api/
   envFrom:
@@ -33,3 +31,7 @@ spec:
   prometheus:
     enabled: true
     path: /min-side-arbeidsgiver-api/internal/actuator/prometheus
+  accessPolicy:
+    outbound:
+      external:
+        - host: login.microsoftonline.com

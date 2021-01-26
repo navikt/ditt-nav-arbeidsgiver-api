@@ -28,7 +28,7 @@ jobs:
   bygg:
     name: Bygg
     needs: test
-    if: needs.test.result == 'success' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/deploy-gcp')
+    if: needs.test.result == 'success' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/reparer-dev-gcp')
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
