@@ -6,7 +6,7 @@ metadata:
   labels:
     team: arbeidsgiver
 spec:
-  image: docker.pkg.github.com/navikt/ditt-nav-arbeidsgiver-api/ditt-nav-arbeidsgiver-api:a18658efd0fd8b4474334650bda5324e239764e5
+  image: {{ image }}
   team: arbeidsgiver
   port: 8080
   liveness:
