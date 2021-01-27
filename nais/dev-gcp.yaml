@@ -11,13 +11,13 @@ spec:
   port: 8080
   liveness:
     path: /min-side-arbeidsgiver-api/internal/actuator/health
-    initialDelay: 60
+    initialDelay: 90
     timeout: 15
     periodSeconds: 5
     failureThreshold: 10
   readiness:
     path: /min-side-arbeidsgiver-api/internal/actuator/health
-    initialDelay: 60
+    initialDelay: 90
     timeout: 15
   ingresses:
     - https://arbeidsgiver.dev.nav.no/min-side-arbeidsgiver-api/
