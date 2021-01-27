@@ -6,7 +6,7 @@ metadata:
   labels:
     team: arbeidsgiver
 spec:
-  image: {{ image }}
+  image: docker.pkg.github.com/navikt/ditt-nav-arbeidsgiver-api/ditt-nav-arbeidsgiver-api:6550c14af27f10c4668121348e50c39adb7b503c
   team: arbeidsgiver
   port: 8080
   liveness:
@@ -23,6 +23,7 @@ spec:
     - https://arbeidsgiver.dev.nav.no/min-side-arbeidsgiver-api/
   envFrom:
     - configmap: loginservice-idporten
+    - secret: min-side-ag-secrets
   env:
     - name: SPRING_PROFILES_ACTIVE
       value: dev-gcp
@@ -35,3 +36,4 @@ spec:
     outbound:
       external:
         - host: login.microsoftonline.com
+        - host: unleash.nais.io
