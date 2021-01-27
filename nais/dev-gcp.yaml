@@ -1,26 +1,25 @@
 apiVersion: nais.io/v1alpha1
 kind: "Application"
 metadata:
-  name: min-side-arbeidsgiver-api
+  name: ditt-nav-arbeidsgiver-api
   namespace: arbeidsgiver
   labels:
     team: arbeidsgiver
 spec:
-  image: docker.pkg.github.com/navikt/ditt-nav-arbeidsgiver-api/ditt-nav-arbeidsgiver-api:6550c14af27f10c4668121348e50c39adb7b503c
+  image: docker.pkg.github.com/navikt/ditt-nav-arbeidsgiver-api/ditt-nav-arbeidsgiver-api:a18658efd0fd8b4474334650bda5324e239764e5
   team: arbeidsgiver
   port: 8080
   liveness:
-    path: /min-side-arbeidsgiver-api/internal/actuator/health
-    initialDelay: 90
+    path: /ditt-nav-arbeidsgiver-api/internal/isAlive
+    initialDelay: 70
     timeout: 15
-    periodSeconds: 5
-    failureThreshold: 10
   readiness:
-    path: /min-side-arbeidsgiver-api/internal/actuator/health
-    initialDelay: 90
+    path: /ditt-nav-arbeidsgiver-api/internal/isAlive
+    initialDelay: 70
     timeout: 15
   ingresses:
-    - https://arbeidsgiver.dev.nav.no/min-side-arbeidsgiver-api/
+    - https://arbeidsgiver.dev.nav.no/ditt-nav-arbeidsgiver-api/
+    - https://arbeidsgiver.dev.intern.nav.no/ditt-nav-arbeidsgiver-api/
   envFrom:
     - configmap: loginservice-idporten
     - secret: min-side-ag-secrets
@@ -31,7 +30,7 @@ spec:
       value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
   prometheus:
     enabled: true
-    path: /min-side-arbeidsgiver-api/internal/actuator/prometheus
+    path: /ditt-nav-arbeidsgiver-api/internal/actuator/prometheus
   accessPolicy:
     outbound:
       external:
